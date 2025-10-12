@@ -1,0 +1,249 @@
+/* App Container with background */
+     @font-face {
+      font-family: 'Simbiot';
+      src: url('/fonts/Simbiot.ttf') format('truetype');
+      }
+      @font-face {
+      font-family: 'Death Markers Drip';
+      src: url('/fonts/Death Markers Drip.otf') format('opentype');
+      }
+
+.appContainer {
+  min-height: 100vh;
+  padding: 16px;
+  box-sizing: border-box;
+  text-align: center;
+  font-family: 'Simbiot', monospace; 
+  font-weight: 400;
+  font-style: normal;
+  background-size: cover;
+  background-position: center;
+}
+
+.mainTitle {
+  font-family: 'Death Markers Drip', cursive;
+  font-size: clamp(3rem, 10vw, 6rem);
+  margin-bottom: 2.5rem;
+  letter-spacing: 8px;
+  user-select: none;
+  animation: fadeIn 0.8s ease-out forwards;
+  font-weight: bold;
+  color: #c10000;
+background: linear-gradient(180deg, #C10000, #8A0303);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+text-shadow: 0 0 15px rgba(193, 0, 0, 0.6), 0 0 30px rgba(138, 3, 3, 0.3);
+}
+
+/* Frosted ghost box */
+.transparentBox {
+  background-color: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(4px);
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 24px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Typed text box */
+/* Typed text box */
+.typedBox {
+  margin-bottom: 10px;
+  font-size: 24px;
+  padding: 14px 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;       /* Center text horizontally */
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  border: 1px solid #ccc;
+  user-select: none;
+  pointer-events: none;
+  background: #ffffffa9;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* Center content horizontally */
+  flex-wrap: wrap;
+  gap: 2px;
+  overflow: auto;
+  overflow-y: hidden;
+  margin: 0 auto;
+}
+
+
+/* Button Row */
+.buttonRow {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+/* Clear & Submit same size */
+.clearBtn, .submitBtn {
+  font-size: 18px;
+  padding: 10px 28px;
+  cursor: pointer;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid #bbb;
+  /* font-family: "Creepster", system-ui; */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  transition: transform 0.18s, box-shadow 0.18s;
+  min-width: 120px; /* same width */
+}
+
+/* Clear hover */
+.clearBtn:hover {
+  transform: scale(1.18);
+  box-shadow: 0 0 20px rgba(255,255,255,0.3), 0 4px 16px rgba(0,0,0,0.18);
+}
+
+/* Submit button styling */
+.submitBtn {
+  background: #111;
+  color: #f44336;
+  border-color: #111;
+}
+
+/* Submit hover glow */
+.submitBtn:hover {
+  transform: scale(1.18);
+  box-shadow: 0 0 20px rgba(255,0,0,0.3), 0 4px 16px rgba(0,0,0,0.18);
+}
+
+/* Flickering / spooky glow animation */
+@keyframes spookyFlicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; text-shadow: 0 0 8px #f44336; }
+  20%, 24%, 55% { opacity: 0.5; text-shadow: 0 0 12px #ff0000; }
+}
+.submitBtn.flickerText {
+  animation: spookyFlicker 2s infinite;
+}
+
+/* Keypad Grid */
+.keypadGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  gap: 20px;
+  justify-content: center;
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+/* Keypad Button */
+.keypadBtn {
+  height: 48px;
+  width: 100%;
+  min-width: 0;
+  font-size: 22px;
+  border-radius: 10px;
+  color: black;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  border: 1px solid #bbb;
+  background: #fff;
+  cursor: pointer;
+  transition: transform 0.5s cubic-bezier(.22,1,.36,1);
+  padding: 0 10px;
+  /* font-family: "Creepster", system-ui; */
+}
+
+/* Hover effect for all buttons */
+button:hover {
+  z-index: 1;
+  transform: scale(1.18);
+  box-shadow: 0 0 20px rgba(255,255,255,0.3), 0 4px 16px rgba(0,0,0,0.18);
+}
+
+/* Flicker text animation for heading */
+@keyframes flicker {
+  0%,19%,21%,23%,25%,54%,56%,100% { opacity:1; }
+  20%,22%,24%,55% { opacity:0.5; }
+}
+.flickerText {
+  animation: flicker 2.5s infinite;
+  display: inline-block;
+  opacity: 1;
+  text-shadow: 0 0 8px rgba(255,255,255,0.6);
+  color: aliceblue;
+}
+
+/* Char burst animation */
+.charBurst {
+  animation: burstZoom 0.25s cubic-bezier(.22,1,.36,1);
+}
+@keyframes burstZoom {
+  0% { transform: scale(1); box-shadow:none; }
+  60% { transform: scale(1.5); box-shadow:0 2px 12px rgba(0,0,0,0.18); }
+  100% { transform: scale(1); box-shadow:none; }
+}
+
+/* Keypad shadow pulse */
+@keyframes shadowPulse {
+  0% { box-shadow:0 0 4px rgba(0,0,0,0.2);}
+  50% { box-shadow:0 0 16px rgba(255,255,255,0.6);}
+  100% { box-shadow:0 0 4px rgba(0,0,0,0.2);}
+}
+.shadowCreep {
+  animation: shadowPulse 2s ease-in-out infinite;
+}
+
+/* Footer text */
+.footerText {
+  margin-top: 24px;
+  color: rgba(188,188,188,0.75);
+  text-align: center;
+}
+
+/* Fixed 4x3 grid layout */
+.fixedGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, auto);
+  gap: 20px;
+  justify-content: center;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+/* Remove body margins and make background full-screen */
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  /* font-family: "Creepster", system-ui; */
+  font-weight: 400;
+  font-style: normal;
+  background: url('/images/bg.jpg') no-repeat center center fixed;
+  background-size: cover; /* Cover entire viewport */
+}
+
+/* App Container with full screen background */
+.appContainer {
+  min-height: 100vh;
+  width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  text-align: center;
+  /* font-family: "Creepster", system-ui; */
+  font-weight: 400;
+  font-style: normal;
+  background: url('/bg.jpg') no-repeat center center fixed;
+  background-size: cover; /* Ensure full screen coverage */
+}
+
+@media (max-width: 600px) {
+  .typed-box {
+    font-size: 1.4rem;
+    min-height: 50px;
+    max-width: 95%;
+  }
+}
+
+
+
+

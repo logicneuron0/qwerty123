@@ -1,0 +1,165 @@
+/* Haunted Theme Styles */
+.font-creepster {
+   font-family: 'Simbiot', sans-serif;
+}
+
+.font-crimson {
+  font-family: 'Crimson Text', serif;
+}
+
+
+.hauntedBg {
+  background-image: url('/images/background.png');
+  background-size: cover; 
+  background-repeat: no-repeat;
+  background-position: center center; 
+  background-attachment: fixed;
+  position: relative;
+  min-height: 100vh;
+}
+
+.haunted-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1;
+}
+
+.haunted-title {
+  text-shadow: 0 0 10px rgba(220, 38, 38, 0.7), 0 0 20px rgba(220, 38, 38, 0.5);
+  animation: flicker 4s infinite alternate;
+}
+
+
+
+.message-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.message-container::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.message-container::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+  border-radius: 20px;
+}
+
+.bot-message {
+  background-color: rgba(55, 65, 81, 0.7);
+  border-left: 3px solid #8b5cf6;
+  padding: 10px 15px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 12px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.user-message {
+  background-color: rgba(76, 29, 149, 0.4);
+  border-right: 3px solid #c4b5fd;
+  padding: 10px 15px;
+  border-radius: 8px 0 0 8px;
+  margin-bottom: 12px;
+  text-align: right;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.hint-message {
+  background-color: rgba(157, 23, 77, 0.4);
+  border-left: 3px solid #f472b6;
+  padding: 10px 15px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 12px;
+  font-style: italic;
+  animation: fadeIn 0.5s ease-out;
+}
+.warning-skull {
+  width: 36px;
+  height: 36px;
+  color: #8b5cf6;
+}
+.fog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPgogIDxmaWx0ZXIgaWQ9Im5vaXNlIj4KICAgIDxmZVR1cmJ1bGVuY2UgdHlwZT0iZnJhY3RhbE5vaXNlIiBiYXNlRnJlcXVlbmN5PSIwLjAyIiBudW1PY3RhdmVzPSI1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIiAvPgogICAgPGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIgLz4KICAgIDxmZUJsZW5kIG1vZGU9Im92ZXJsYXkiIGluMj0iU291cmNlR3JhcGhpYyIgcmVzdWx0PSJ0dXJidWxlbmNlIiAvPgogIDwvZmlsdGVyPgogIDxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+');
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.5;
+}
+
+@keyframes flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    text-shadow: 0 0 10px rgba(220, 38, 38, 0.7), 0 0 20px rgba(220, 38, 38, 0.5);
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 15px 5px rgba(139, 92, 246, 0.5), 0 0 30px 10px rgba(139, 92, 246, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 20px 10px rgba(139, 92, 246, 0.6), 0 0 40px 15px rgba(139, 92, 246, 0.4);
+  }
+}
+
+@keyframes swirl {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-5px);
+  }
+  40%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+
+@keyframes haunted-glow {
+  0% {
+    box-shadow: 0 0 12px rgba(139, 0, 0, 0.7), 
+                0 0 20px rgba(200, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(178, 34, 34, 0.9), 
+                0 0 25px rgba(125, 4, 4, 0.6); 
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(139, 0, 0, 0.7),
+                0 0 20px rgba(200, 0, 0, 0.4);
+  }
+}
+
+.haunted-shadow {
+  animation: haunted-glow 4s infinite alternate ease-in-out;
+}
