@@ -22,8 +22,9 @@ const Task2 = () => {
 
   const handleSubmit = async(e) => {
     e.preventDefault();
+    const correctRiddleAnswer = process.env.NEXT_PUBLIC_RIDDLE || ""; 
 
-    if (answer.trim().toLowerCase()=== "correct1") {
+    if (answer.trim().toLowerCase() == correctRiddleAnswer.trim().toLowerCase()) {
       // Update score + next stage in backend
       await fetch("/api/game/updateScore", {
         method: "POST",
@@ -32,7 +33,7 @@ const Task2 = () => {
       });
 
       // Navigate to Game2 page
-      router.push("/game/game2");
+      router.push("/game/akinatorgame");
     } else{
       alert("wrong ans!")
     }

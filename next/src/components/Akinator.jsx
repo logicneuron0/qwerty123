@@ -4,7 +4,7 @@ import styles from './Akinator.module.css';
 import { useState, useRef, useEffect } from 'react';
 import { Skull, RefreshCw, ChevronRight } from 'lucide-react'; 
 
-export default function Akinator() {
+export default function Akinator({onRoundWin}) {
 const [API_BASE_URL, setApiBaseUrl] = useState('http://127.0.0.1:5000'); 
 
 const [messages, setMessages] = useState([]);
@@ -178,6 +178,10 @@ const handleSubmit = async (e) => {
       setTimeout(() => {
         setMessages(prev => [...prev, congratsMessage]);
       }, 1500);
+
+      if(typeof onRoundWin==="function"){
+        onRoundWin(roundStatus.currentRound)
+      }
      
     }
     
@@ -197,12 +201,12 @@ const handleSubmit = async (e) => {
   
   
 return (
-  <div className={styles.hauntedBg}>
+  <div className={styles.hauntedBg} style={{ fontFamily: "'Simbiot', monospace" }}>
     <div className="container mx-auto px-4 py-8 relative z-10">
       <header className="text-center mb-8">
-        <h1 className="text-5xl font-creepster text-red-600 mb-2 haunted-title">Reverse Akinator</h1>
+              <h1 className="font-bold text-6xl md:text-7xl mb-10 text-center bg-gradient-to-b from-[#C10000] to-[#8A0303] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(193,0,0,0.6)]" style={{ fontFamily: "'Death Markers Drip', cursive", letterSpacing: '6px' }}>Reverse Akinator</h1>
         {roundStatus.totalRounds > 0 && !isGameCompleted && (
-          <p className="text-xl font-bold text-fuchsia-400 font-crimson">
+          <p className="text-xl font-bold font-crimson">
               {`Round ${roundStatus.currentRound} of ${roundStatus.totalRounds}`}
           </p>
         )}

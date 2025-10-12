@@ -7,18 +7,7 @@
       font-family: 'Simbiot';
       src: url('/fonts/Simbiot.ttf') format('truetype');
       }
-      
-      /* * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
 
-      html, body, #root {
-        height: 100%;
-        width: 100%;
-        overflow-x: hidden;
-      } */
 
       @keyframes fadeIn {
         from {
@@ -40,16 +29,6 @@
     transform: translateY(0);
   }
 }
-      /* body {
-        font-family: 'Simbiot', monospace; 
-        color: #e0e0e0;
-        background-color: #1a1a1a;
-        overflow-wrap: break-word;
-        background-image: url('/background3.jpg');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-      } */
 
       .appContainer {
         min-height: 100vh;

@@ -80,14 +80,14 @@ export default function Keypad({onSubmit}) {
     setAnimateCharIdx(typed.length);
   };
 
-  const handleClear = () => {setTyped(''); setMessage('Input cleared.')}
+  const handleClear = () => {setTyped('');}
   
   const handleSubmit = () => {
    if (typed.trim()) {
       if(onSubmit){
         onSubmit(typed);
       }
-      setMessage(`Submitted: ${typed}`);
+      // setMessage(`Submitted: ${typed}`);
       setTyped(''); 
     } else {
       setMessage('Please enter a key sequence.');
