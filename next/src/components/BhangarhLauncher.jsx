@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function BhangarhLauncher() {
   const [user, setUser] = useState(null);
@@ -99,6 +100,9 @@ export default function BhangarhLauncher() {
           <li>✅ +10 for selecting correct objects</li>
           <li>❌ -2 for selecting wrong objects</li>
         </ul>
+      </div>
+      <div className='mt-10'>
+        <Link href='/game/riddlegame'><button className="bg-[#880000] mb-10 border-2 border-[#ff0000] text-white px-6 py-5 rounded-lg text-xl font-semibold tracking-widest transition-all duration-300 hover:bg-[#ff0000] hover:scale-105 shadow-[0_8px_20px_rgba(255,0,0,0.5)]">Go to next task</button></Link>
       </div>
     </div>
   );

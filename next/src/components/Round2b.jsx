@@ -1,14 +1,13 @@
 "use client";
 import React, { useState } from "react";
 
-const Round2 = () => {
+const Round2b = () => {
   const [answer, setAnswer] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [score, setScore] = useState(0);
   const [completionTime, setCompletionTime] = useState("");
 
-  // change this to your correct answer
-  const correctAnswer = process.env.NEXT_PUBLIC_TECH1;
+  const correctAnswer = process.env.NEXT_PUBLIC_TECH2;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,7 +24,6 @@ const Round2 = () => {
 
       setScore((prev) => prev + 100);
       setShowModal(true);
-      
       setAnswer("");
     } else {
       alert("Wrong Answer!");
@@ -98,20 +96,12 @@ const Round2 = () => {
               Completed at: <span className="text-[#ff4d4d]">{completionTime}</span>
             </p>
             <p className="text-lg text-green-400 mb-6">+100 Points Added! 🎯</p>
-            {/* <button
+            <button
               onClick={closeModal}
               className="bg-[#880000] border-2 border-[#ff0000] text-white px-5 py-2 rounded-lg text-lg transition-all duration-300 hover:bg-[#ff0000] hover:scale-105"
             >
               Close
-            </button> */}
-            <form method="POST" action="/api/auth/logout">
-         <button
-           type="submit"
-           className="bg-[#880000] border-2 border-[#ff0000] text-white px-5 py-2 rounded-lg text-lg transition-all duration-300 hover:bg-[#ff0000] hover:scale-105"
-         >
-           Logout
-         </button>
-       </form>
+            </button>
           </div>
         </div>
       )}
@@ -119,4 +109,4 @@ const Round2 = () => {
   );
 };
 
-export default Round2;
+export default Round2b;

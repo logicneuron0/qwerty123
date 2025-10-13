@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import styles from './Task5.module.css'
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 const QuestionCard = ({ imageUrl, questionNumber }) => {
   return (
@@ -22,6 +23,8 @@ const QuestionCard = ({ imageUrl, questionNumber }) => {
 };
 
 const Task5c = () => {
+    const router= useRouter();
+  
   const [demoInstructions, setDemoInstructions] = useState([
     "Solve each clue to find a number in the grid.", 
     "Each number eliminates its row and/A/or column as specified.", 
@@ -54,11 +57,18 @@ const Task5c = () => {
       if (answer === '27') {
         setPopupMessage('Correct Answer!');
         setIsCorrect(true);
+        setShowPopup(true);
+
+        // Redirect after 2 seconds
+        setTimeout(() => {
+          router.push('/game/round2');
+        }, 2000);
+
       } else {
+        alert('Wrong Answer!');
         setPopupMessage('Wrong Answer!');
         setIsCorrect(false);
-      }
-      setShowPopup(true);
+        setShowPopup(false);      }
     }
   };
 

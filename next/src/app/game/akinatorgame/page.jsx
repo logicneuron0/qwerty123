@@ -41,7 +41,7 @@ export default function AkinatorGamePage() {
 
       setUser((prev) => ({
         ...prev,
-        score: (prev?.score || 0) + 20,
+        score: (prev?.score || 0) + 5,
         stage: (prev?.stage || 1) + 1,
       }));
     } catch (err) {
@@ -70,7 +70,7 @@ export default function AkinatorGamePage() {
       {!gameCompleted ? (
         <Akinator onRoundWin={handleRoundWin} />
       ) : (
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-4" style={{fontFamily: "'Simbiot', monospace"}}>
           <h1 className="text-4xl font-bold text-green-400">
             🎉 You completed all 4 rounds!
           </h1>

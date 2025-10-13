@@ -86,7 +86,8 @@ def call_gemini_api(system_prompt, user_query, character_context):
     (Error handling and structure retained from original file)
     """
     if not API_KEY:
-        pass 
+        print("⚠️ WARNING: GEMINI_API_KEY not found!")
+        return "ERROR: API key not configured." 
     
     api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent?key={API_KEY}"
     
@@ -124,17 +125,51 @@ CORS(app)
 def check_answer_with_gemini(question: str, dataset: dict) -> str:
     if not dataset:
         return "ERROR: Game not initialized. Check database connection."
-        
+
+    #layer1 sec
+    forbidden_patterns = [
+        'character', 'name', 'who is', 'who are', "who's", 
+        'what is the character', 'tell me who', 'reveal',
+        'character name', "character's name", 'identity',
+        'what character', 'which character'
+    ]
+    
+    question_lower = question.lower().strip()
+    
+    # Block any question asking about character identity
+    for pattern in forbidden_patterns:
+        if pattern in question_lower:
+            return "NOT FOUND"
+          
+    #layer2 sec
     system_instruction = (
         "You are a strict trivia game master. Your task is to analyze the user's question "
         "and determine the correct response based ONLY on the provided JSON data about the character. "
         "Your response MUST adhere to one of the following formats:\n"
-        "1. If the question is a YES/NO question (e.g., 'Is he rich?'), respond ONLY with 'TRUE' or 'FALSE'.\n"
-        "2. If the question asks for a VALUE (e.g., 'What is his gender?'), respond ONLY with the exact value from the JSON (e.g., 'male', 'smuggler').\n"
-        "3. If the answer is not contained in the provided data, respond ONLY with 'NOT FOUND'."
+        "1. The character's NAME has been REMOVED from the data you receive.\n"
+        "2. NEVER mention, hint at, or reveal any character identity or name.\n"
+        "3. If asked 'What is the character?' or 'Who is it?' or 'What is the name?', "
+        "respond ONLY with 'NOT FOUND'.\n"
+        "4. For YES/NO questions (e.g., 'Is the character male?'), respond ONLY with 'TRUE' or 'FALSE'.\n"
+        "5. For VALUE questions (e.g., 'What is the gender?'), respond with the exact value from JSON.\n"
+        "6. If the answer is not in the provided data, respond with 'NOT FOUND'.\n"
+        "7. NEVER use fields that reveal identity: 'SOURCE' .\n"
+        "8. Keep responses concise - single word or very short phrase only.\n\n"
+        "EXAMPLE RESPONSES:\n"
+        "Q: 'Is the character male?' → 'TRUE' or 'FALSE'\n"
+        "Q: 'What is the gender?' → 'MALE'\n"
+        "Q: 'Is it a villain?' → 'TRUE' or 'FALSE'\n"
+        "Q: 'What is the character?' → 'NOT FOUND'\n"
+        "Q: 'Who is this?' → 'NOT FOUND'\n"
+        "Q: 'What is the character name?' → 'NOT FOUND'"
     )
     
-    character_context = json.dumps(dataset, indent=2)
+    #layer3 sec
+    safe_dataset = {
+        k: v for k, v in dataset.items() 
+        if k not in ['CHARACTER', 'SOURCE', '_id']
+    }
+    character_context = json.dumps(safe_dataset, indent=2)
 
     gemini_response = call_gemini_api(system_instruction, question, character_context)
     
@@ -159,7 +194,7 @@ def generate_hint(past_answers, current_dataset):
 
     if last_two_negative:
         # Get a random attribute key for a subtle hint
-        keys = [k for k in current_dataset.keys() if k not in ['CHARACTER', 'SOURCE', 'PORTRAYED_BY']]
+        keys = [k for k in current_dataset.keys() if k not in ['CHARACTER', 'SOURCE', 'PORTRAYED_BY', '_id']]
         if keys:
             random_key = random.choice(keys)
             # Make the hint subtle, converting snake_case to readable text
@@ -182,6 +217,12 @@ def ask_question():
             'answer': "ERROR: No character loaded for this round. Try /api/next_character.",
             'hint': "Game Error.",
             'gameOver': True
+        })
+    if not question.strip():
+        return jsonify({
+            'answer': "ERROR: Please ask a question.",
+            'hint': "Try again!",
+            'gameOver': False
         })
         
     # complex question to Gemini
@@ -212,10 +253,11 @@ def get_next_character_round():
         # Success
         return jsonify({
             "status": "NEXT_ROUND_STARTED",
-            "character_name": CURRENT_CHARACTER_DATA.get('CHARACTER', 'Unknown'),
+            # "character_name": CURRENT_CHARACTER_DATA.get('CHARACTER', 'Unknown'),
             "remaining_rounds": len(remaining_character_list) + 1, # +1 because CURRENT_CHARACTER_DATA is the current round
-            "total_rounds": total_rounds
-        })
+            "total_rounds": total_rounds,
+            "message": "New round started! Start asking questions."
+        }), 200
     else:
         return jsonify({
             "status": "GAME_OVER_ALL_ROUNDS",
@@ -227,7 +269,7 @@ def get_next_character_round():
 def get_game_status():
     """Provides initial game status for the Next.js frontend on load."""
     return jsonify({
-        "current_character": CURRENT_CHARACTER_DATA.get('CHARACTER', 'N/A') if CURRENT_CHARACTER_DATA else 'N/A',
+        # "current_character": CURRENT_CHARACTER_DATA.get('CHARACTER', 'N/A') if CURRENT_CHARACTER_DATA else 'N/A',
         "total_rounds": total_rounds,
         "remaining_rounds": len(remaining_character_list) + (1 if CURRENT_CHARACTER_DATA else 0),
         "game_ready": True if CURRENT_CHARACTER_DATA else False
@@ -235,4 +277,6 @@ def get_game_status():
 
 
 if __name__ == '__main__':
+    print("🚀 Starting Flask server...")
+    print("📊 Server: http://127.0.0.1:5000")
     app.run(host='127.0.0.1', debug=True, port=5000, use_reloader=False)

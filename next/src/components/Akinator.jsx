@@ -30,17 +30,17 @@ useEffect(() => {
 useEffect(() => {
   setApiBaseUrl('http://localhost:5000'); 
   
-  const fogOverlay = document.createElement('div');
-  fogOverlay.className = 'fog-overlay';
-  document.body.appendChild(fogOverlay);
+  // const fogOverlay = document.createElement('div');
+  // fogOverlay.className = 'fog-overlay';
+  // document.body.appendChild(fogOverlay);
   
   if (!gameOver && inputRef.current) {
       inputRef.current.focus();
   }
 
-  return () => {
-    document.body.removeChild(fogOverlay);
-  };
+  // return () => {
+  //   document.body.removeChild(fogOverlay);
+  // };
 }, [gameOver]); 
 
 
@@ -121,7 +121,12 @@ const handleSubmit = async (e) => {
   e.preventDefault();
   if (!input.trim() || isLoading || gameOver) return;
 
-  const currentQuestion = input;
+  const currentQuestion = input.trim();
+
+  const forbiddenPatterns = ['what is the character', 'who is', 'character name', 'tell me who', 'what character'];
+  const questionLower = currentQuestion.toLowerCase();
+  const hasForbiddenPattern = forbiddenPatterns.some(pattern => questionLower.includes(pattern));
+
   const userMessage = { id: messages.length + 1, text: currentQuestion, sender: 'user' };
   setMessages(prev => [...prev, userMessage]);
   setInput('');
@@ -129,6 +134,21 @@ const handleSubmit = async (e) => {
   setCrystalActive(true);
   
   
+// If user is asking for character name, warn them
+  if (hasForbiddenPattern && (questionLower.includes('what') || questionLower.includes('who'))) {
+    setTimeout(() => {
+      const warningMsg = {
+        id: messages.length + 2,
+        text: "⚠️ I cannot reveal the character's identity - that would defeat the purpose! Ask about traits, gender, origin, or other attributes instead.",
+        sender: 'bot',
+        isHint: true
+      };
+      setMessages(prev => [...prev, warningMsg]);
+      setIsLoading(false);
+      setCrystalActive(false);
+    }, 500);
+    return;
+  }  
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/ask`, {
