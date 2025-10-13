@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Skull, RefreshCw, ChevronRight } from 'lucide-react'; 
 
 export default function Akinator({onRoundWin}) {
-const [API_BASE_URL, setApiBaseUrl] = useState('http://127.0.0.1:5000'); 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
 
 const [messages, setMessages] = useState([]);
 const [input, setInput] = useState('');
@@ -28,7 +28,6 @@ useEffect(() => {
 }, [messages]);
 
 useEffect(() => {
-  setApiBaseUrl('http://localhost:5000'); 
   
   // const fogOverlay = document.createElement('div');
   // fogOverlay.className = 'fog-overlay';
