@@ -96,12 +96,15 @@ const Round2b = () => {
               Completed at: <span className="text-[#ff4d4d]">{completionTime}</span>
             </p>
             <p className="text-lg text-green-400 mb-6">+100 Points Added! 🎯</p>
-            <button
-              onClick={closeModal}
-              className="bg-[#880000] border-2 border-[#ff0000] text-white px-5 py-2 rounded-lg text-lg transition-all duration-300 hover:bg-[#ff0000] hover:scale-105"
-            >
-              Close
-            </button>
+
+            <form method="POST" action="/api/auth/logout">
+         <button
+           type="submit"
+           className="bg-[#880000] border-2 border-[#ff0000] text-white px-5 py-2 rounded-lg text-lg transition-all duration-300 hover:bg-[#ff0000] hover:scale-105"
+         >
+           Logout
+         </button>
+       </form>
           </div>
         </div>
       )}

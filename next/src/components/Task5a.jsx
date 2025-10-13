@@ -1,29 +1,10 @@
 "use client"
 import React, { useState } from 'react';
 import styles from './Task5.module.css'
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 
-const QuestionCard = ({ imageUrl, questionNumber }) => {
-  return (
-    <div className={styles.questionCard}>
-      <h3 className={styles.cardTitle}>Question {questionNumber}</h3>
-      <div className={styles.cardImageContainer}>
-        <Image 
-          src={imageUrl} 
-          alt={`Question ${questionNumber}`} 
-          className={styles.cardImage}
-          width={600}
-          height={200}
-          style={{ objectFit: 'cover' }}
-        />
-      </div>
-    </div>
-  );
-};
 
-const Task5a = () => {
-  const router= useRouter();
+const Task5a = ({onSubmit}) => {
+
   const [demoInstructions, setDemoInstructions] = useState([
     "Solve each clue to find a number in the grid.", 
     "Each number eliminates its row and/A/or column as specified.", 
@@ -36,33 +17,22 @@ const Task5a = () => {
   const [popupMessage, setPopupMessage] = useState('');
   const [isCorrect, setIsCorrect] = useState(false);
   
-  const questions = [
-    { id: 1, imageUrl: '/images/A/q1.png' }, 
-    { id: 2, imageUrl: '/images/A/q2.png' },
-    { id: 3, imageUrl: '/images/A/q3.png' },
-    { id: 4, imageUrl: '/images/A/q4.png' },
-    { id: 5, imageUrl: '/images/A/q5.png' }, 
-    { id: 6, imageUrl: '/images/A/q6.png' },
-    { id: 7, imageUrl: '/images/A/q7.png' },
-    { id: 8, imageUrl: '/images/A/q8.png' },
-    { id: 9, imageUrl: '/images/A/q9.png' }, 
-    { id: 10, imageUrl: '/images/A/q10.png' }
-  ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     const answer = newDemoInstruction.trim();
 
     if (answer) {
-      if (answer === '27') {
+      if (answer.trim().toLowerCase() === '27') {
         setPopupMessage('Correct Answer!');
         setIsCorrect(true);
         setShowPopup(true);
+        await onSubmit(answer);
 
-        // Redirect after 2 seconds
-        setTimeout(() => {
-          router.push('/game/round2');
-        }, 2000);
+        // Redirect after 1 sec
+        // setTimeout(() => {
+        //   router.push('/game/round2');
+        // }, 2000);
 
       } else {
         alert('Wrong Answer!');
@@ -124,7 +94,7 @@ const Task5a = () => {
           </ul>
         </div>
 
-        <div className={styles.questionsContainer}>
+        {/* <div className={styles.questionsContainer}>
           {questions.map(q => (
             <QuestionCard 
               key={q.id} 
@@ -132,28 +102,20 @@ const Task5a = () => {
               questionNumber={q.id} 
             />
           ))}
-        </div>
+        </div> */}
 
         <form onSubmit={handleSubmit} className={styles.demoInstructionForm}>
           <textarea
             value={newDemoInstruction}
             onChange={(e) => setNewDemoInstruction(e.target.value)}
             placeholder="Enter your answer..."
-            rows="2"
+            rows="1"
           />
           <div className={styles.formButtons}>
             <button type="submit">Submit</button>
             <button type="button" onClick={handleClear}>Clear</button>
           </div>
         </form>
-        <form method="POST" action="/api/auth/logout">
-         <button
-           type="submit"
-           className="mt-6 px-4 py-2 bg-red-500 text-white rounded"
-         >
-           Logout
-         </button>
-       </form>
       </div>
     </>
   );

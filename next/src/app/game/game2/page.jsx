@@ -11,7 +11,7 @@ export default function Game2Page() {
       await fetch("/api/game/updateScore", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scoreToAdd: 20, nextStage: 3 }),
+        body: JSON.stringify({ scoreToAdd: 10, nextStage: 3 }),
         credentials: "include"
       });
 

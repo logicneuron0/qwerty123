@@ -305,7 +305,7 @@ return (
                           type="button" 
                           onClick={startNextRound}
                           disabled={isLoading}
-                          className="w-full py-3 px-4 bg-fuchsia-800 hover:bg-fuchsia-700 text-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-fuchsia-600 transition-colors duration-200 flex items-center justify-center gap-2 font-bold disabled:bg-gray-500"
+                          className="w-full py-3 px-4 bg-red-900 hover:bg-red-800 text-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-fuchsia-600 transition-colors duration-200 flex items-center justify-center gap-2 font-bold disabled:bg-gray-500"
                       >
                           {isLoading 
                               ? 'Summoning Next Character...' 
@@ -348,7 +348,7 @@ return (
               </div>
           </div>
           
-          <div className="mt-6 text-center text-gray-500 text-lg">
+          <div className="mt-6 text-center text-white text-lg">
               <p>The spirits are watching... Choose your questions wisely.</p>
           </div>
       </main>

@@ -8,8 +8,9 @@ export default function AkinatorGamePage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(20 * 60); // 20 mins
 
-  // ✅ Fetch logged-in user info
+  //  Fetch logged-in user info
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -27,14 +28,40 @@ export default function AkinatorGamePage() {
     fetchUser();
   }, [router]);
 
-  // ✅ Update user score & stage when round is completed
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      // Time’s up → redirect automatically
+      alert("⏰ Time's up! Moving to the next game...");
+      router.push("/game/game2");
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, router]);
+
+  // Format time as MM:SS
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
+
+  // Update user score & stage when round is completed
   const handleRoundWin = async (roundNumber) => {
     try {
       await fetch("/api/game/updateScore", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          scoreToAdd: 20,
+          scoreToAdd: 5,
           nextStage: (user?.stage || 1) + 1,
         }),
       });
@@ -48,7 +75,7 @@ export default function AkinatorGamePage() {
       console.error("Error updating user score:", err);
     }
 
-    // ✅ If this was the 4th (final) round, end game
+    //  If this was the 4th (final) round, end game
     if (roundNumber >= 4) {
       setGameCompleted(true);
       setTimeout(() => {
@@ -59,7 +86,7 @@ export default function AkinatorGamePage() {
 
   if (!user) {
     return (
-      <div className="flex justify-center items-center h-screen text-lg text-gray-400">
+      <div className="flex justify-center items-center h-screen text-lg text-red-800 bg-black">
         Loading your session...
       </div>
     );
@@ -67,6 +94,10 @@ export default function AkinatorGamePage() {
 
   return (
     <div className="min-h-screen bg-black text-gray-200 flex flex-col items-center justify-center">
+      <div className="absolute z-10 top-6 right-6 text-lg font-mono bg-gray-800 px-4 py-2 rounded-lg shadow-md">
+        ⏱ Time Left: <span className="text-green-400 font-semibold">{formatTime(timeLeft)}</span>
+      </div>
+      
       {!gameCompleted ? (
         <Akinator onRoundWin={handleRoundWin} />
       ) : (

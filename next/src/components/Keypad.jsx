@@ -14,6 +14,7 @@ function shuffle(array) {
 }
 
 export default function Keypad({onSubmit}) {
+  
   const [keypad, setKeypad] = useState(KEYS);
   const [typed, setTyped] = useState('');
   const [message, setMessage] = useState(''); // State for custom message/alert
@@ -62,7 +63,7 @@ export default function Keypad({onSubmit}) {
       setTimeout(() => {
         setKeypad(shuffle(KEYS));
       }, 200);
-    }, 3000);
+    }, 2000);
 
     const messageTimeout = setTimeout(() => setMessage(''), 3000);
 

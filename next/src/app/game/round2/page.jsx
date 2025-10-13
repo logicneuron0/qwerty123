@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Leaderboard from "@/components/Leaderboard";
 
 const Round2Page = () => {
   const router = useRouter();
@@ -75,6 +76,7 @@ const Round2Page = () => {
           Submit
         </button>
       </form>
+      <Leaderboard/>
     </div>
   );
 };
