@@ -1,4 +1,3 @@
-
 import requests
 import os
 import random
@@ -16,6 +15,9 @@ MONGO_URI = os.getenv("MONGODB_URL")
 DB_NAME = "test"
 COLLECTION_NAME = "characters"
 MODEL_NAME = "gemini-2.5-flash-preview-05-20"
+
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+
 
 
 all_characters = [] # Stores all characters fetched from the DB
@@ -44,6 +46,7 @@ def initialize_game_state():
             return
 
         total_rounds = len(all_characters)
+        
         
         # Shuffle the list and copy it to the remaining list
         random.shuffle(all_characters)
@@ -119,8 +122,17 @@ def call_gemini_api(system_prompt, user_query, character_context):
         print(f"Gemini API Response Parsing Error: {e}")
         return "ERROR: Invalid response from Gemini API."
 
+
+# --- CORS Configuration for Deployment ---
+CORS_ORIGINS = ["http://localhost:3000"] 
+if FRONTEND_URL:
+    # Allows multiple URLs if comma-separated (e.g., https://prod.com,https://staging.com)
+    CORS_ORIGINS.extend(FRONTEND_URL.split(','))
+
 app = Flask(__name__)
-CORS(app)
+# The change is here: configuring CORS with the allowed origins list
+CORS(app, origins=CORS_ORIGINS) 
+
 
 def check_answer_with_gemini(question: str, dataset: dict) -> str:
     if not dataset:
@@ -279,4 +291,4 @@ def get_game_status():
 if __name__ == '__main__':
     print("🚀 Starting Flask server...")
     print("📊 Server: http://127.0.0.1:5000")
-    app.run(host='127.0.0.1', debug=True, port=5000, use_reloader=False)
+    app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000), debug=True)
