@@ -124,10 +124,14 @@ def call_gemini_api(system_prompt, user_query, character_context):
 
 
 # --- CORS Configuration for Deployment ---
-CORS_ORIGINS = ["http://localhost:3000", "https://clockout3.vercel.app/"] 
+CORS_ORIGINS = ["http://localhost:3000"] 
+
 if FRONTEND_URL:
     # Allows multiple URLs if comma-separated (e.g., https://prod.com,https://staging.com)
-    CORS_ORIGINS.extend(FRONTEND_URL.split(','))
+    origins_to_add = [url.strip().rstrip('/') for url in FRONTEND_URL.split(',') if url.strip()]
+    CORS_ORIGINS.extend(origins_to_add)
+    
+CORS_ORIGINS.append("https://clockout3.vercel.app") 
 
 app = Flask(__name__)
 # The change is here: configuring CORS with the allowed origins list
