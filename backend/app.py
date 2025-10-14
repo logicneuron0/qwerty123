@@ -124,7 +124,7 @@ def call_gemini_api(system_prompt, user_query, character_context):
 
 
 # --- CORS Configuration for Deployment ---
-CORS_ORIGINS = ["http://localhost:3000"] 
+CORS_ORIGINS = ["http://localhost:3000", "https://clockout3.vercel.app/"] 
 if FRONTEND_URL:
     # Allows multiple URLs if comma-separated (e.g., https://prod.com,https://staging.com)
     CORS_ORIGINS.extend(FRONTEND_URL.split(','))
