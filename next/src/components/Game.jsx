@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { roomsData, clueMap, itemsData } from '@/lib/GameData';
