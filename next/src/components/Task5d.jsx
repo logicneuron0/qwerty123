@@ -1,29 +1,8 @@
 "use client"
 import React, { useState } from 'react';
 import styles from './Task5.module.css'
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 
-const QuestionCard = ({ imageUrl, questionNumber }) => {
-  return (
-    <div className={styles.questionCard}>
-      <h3 className={styles.cardTitle}>Question {questionNumber}</h3>
-      <div className={styles.cardImageContainer}>
-        <Image 
-          src={imageUrl} 
-          alt={`Question ${questionNumber}`} 
-          className={styles.cardImage}
-          width={600}
-          height={200}
-          style={{ objectFit: 'cover' }}
-        />
-      </div>
-    </div>
-  );
-};
-
-const Task5d = () => {
-    const router= useRouter();
+const Task5d = ({onSubmit}) => {
   
   const [demoInstructions, setDemoInstructions] = useState([
     "Solve each clue to find a number in the grid.", 
@@ -31,44 +10,22 @@ const Task5d = () => {
     "After all 10 clues, only one cell will remain! Enter the number to advance",
     "All the best!"
   ]);
-
+ 
   const [newDemoInstruction, setNewDemoInstruction] = useState('');
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
   const [isCorrect, setIsCorrect] = useState(false);
   
-  const questions = [
-    { id: 1, imageUrl: '/images/D/q1.png' }, 
-    { id: 2, imageUrl: '/images/D/q2.png' },
-    { id: 3, imageUrl: '/images/D/q3.png' },
-    { id: 4, imageUrl: '/images/D/q4.png' },
-    { id: 5, imageUrl: '/images/D/q5.png' }, 
-    { id: 6, imageUrl: '/images/D/q6.png' },
-    { id: 7, imageUrl: '/images/D/q7.png' },
-    { id: 8, imageUrl: '/images/D/q8.png' },
-    { id: 9, imageUrl: '/images/D/q9.png' }, 
-    { id: 10, imageUrl: '/images/D/q10.png' }
-  ];
 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async(e) => {
     e.preventDefault();
     const answer = newDemoInstruction.trim();
     if (answer) {
-      if (answer === '27') {
-        setPopupMessage('Correct Answer!');
-        setIsCorrect(true);
-      setShowPopup(true);
+      if (answer.trim().toLowerCase() === '27') {
+        await onSubmit(answer);
 
-        // Redirect after 2 seconds
-        setTimeout(() => {
-          router.push('/game/round2');
-        }, 2000);
-
-      } else {
-        alert('Wrong Answer!');
-        setPopupMessage('Wrong Answer!');
-        setIsCorrect(false);
-        setShowPopup(false);      }
+      } 
     }
   };
 
@@ -96,14 +53,14 @@ const Task5d = () => {
         }
       `}</style>
 
-      {showPopup && (
+      {/* {showPopup && (
         <div className={styles.popupOverlay}>
           <div className={`${styles.popupContent} ${isCorrect ? styles.correct : styles.wrong}`}>
             <p>{popupMessage}</p>
             <button onClick={closePopup} className={styles.popupCloseBtn}>Close</button>
           </div>
         </div>
-      )}
+      )} */}
 
       <div className={styles.appContainer}>
         <h1 className={styles.mainTitle}>Math Challenge</h1>
@@ -124,7 +81,7 @@ const Task5d = () => {
           </ul>
         </div>
 
-        <div className={styles.questionsContainer}>
+        {/* <div className={styles.questionsContainer}>
           {questions.map(q => (
             <QuestionCard 
               key={q.id} 
@@ -132,7 +89,7 @@ const Task5d = () => {
               questionNumber={q.id} 
             />
           ))}
-        </div>
+        </div> */}
 
         <form onSubmit={handleSubmit} className={styles.demoInstructionForm}>
           <textarea

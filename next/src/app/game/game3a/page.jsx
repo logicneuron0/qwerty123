@@ -7,8 +7,8 @@ export default function Game3aPage() {
 
   const router = useRouter();
   const [startTime, setStartTime] = useState(null);
-
-  useEffect(() => {
+  
+  useEffect(() => { 
     setStartTime(Date.now()); // Record start time when game loads
   }, []);
 
@@ -17,15 +17,17 @@ export default function Game3aPage() {
       const endTime = Date.now();
       const timeTakenMinutes = (endTime - startTime) / 60000; // convert ms → minutes
 
-      let scoreToAdd = 5;
-      if (timeTakenMinutes <= 5) scoreToAdd = 20;
-      else if (timeTakenMinutes <= 10) scoreToAdd = 10;
+      let score = 5;
+      if (timeTakenMinutes <= 5) score = 20;
+      else if (timeTakenMinutes <= 10) score = 10;
 
 
       await fetch("/api/game/updateScore", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scoreToAdd: 30, nextStage: 4 }),
+        body: JSON.stringify({ scoreToAdd: score, nextStage: 4 }),
+        credentials: "include"
+
       });
       
       alert("Congrats! Task complete.");

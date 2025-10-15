@@ -24,9 +24,9 @@ const Task5a = ({onSubmit}) => {
 
     if (answer) {
       if (answer.trim().toLowerCase() === '27') {
-        setPopupMessage('Correct Answer!');
-        setIsCorrect(true);
-        setShowPopup(true);
+        // setPopupMessage('Correct Answer!');
+        // setIsCorrect(true);
+        // setShowPopup(true);
         await onSubmit(answer);
 
         // Redirect after 1 sec
@@ -34,11 +34,12 @@ const Task5a = ({onSubmit}) => {
         //   router.push('/game/round2');
         // }, 2000);
 
-      } else {
-        alert('Wrong Answer!');
-        setPopupMessage('Wrong Answer!');
-        setIsCorrect(false);
-        setShowPopup(false);      }
+      } 
+      // else {
+      //   alert('Wrong Answer!');
+      //   setPopupMessage('Wrong Answer!');
+      //   setIsCorrect(false);
+      //   setShowPopup(false);      }
     }
   };
 
@@ -66,14 +67,6 @@ const Task5a = ({onSubmit}) => {
         }
       `}</style>
 
-      {showPopup && (
-        <div className={styles.popupOverlay}>
-          <div className={`${styles.popupContent} ${isCorrect ? styles.correct : styles.wrong}`}>
-            <p>{popupMessage}</p>
-            <button onClick={closePopup} className={styles.popupCloseBtn}>Close</button>
-          </div>
-        </div>
-      )}
 
       <div className={styles.appContainer}>
         <h1 className={styles.mainTitle}>Math Challenge</h1>
@@ -94,15 +87,7 @@ const Task5a = ({onSubmit}) => {
           </ul>
         </div>
 
-        {/* <div className={styles.questionsContainer}>
-          {questions.map(q => (
-            <QuestionCard 
-              key={q.id} 
-              imageUrl={q.imageUrl} 
-              questionNumber={q.id} 
-            />
-          ))}
-        </div> */}
+
 
         <form onSubmit={handleSubmit} className={styles.demoInstructionForm}>
           <textarea
