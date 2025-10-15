@@ -47,11 +47,11 @@ const Round2b = () => {
         <h2 className="text-2xl font-semibold text-[#ff4d4d] mb-4">Instructions</h2>
         <ul className="list-decimal list-inside space-y-3 text-lg">
           <li>Complete the given technical task carefully.</li>
-          <li>Upload your solution or view resources using the link below.</li>
+          <li>Enter the final sentence.</li>
         </ul>
         <div className="mt-4">
           <a
-            href="https://drive.google.com/" // replace with your actual Google Drive link
+            href="https://drive.google.com/drive/u/3/folders/1JqrwqtWT-sLSG6uzDCBQPqktpE2xX2ML" // replace with your actual Google Drive link
             target="_blank"
             rel="noopener noreferrer"
             style={{ textDecoration: "none" }}

@@ -49,15 +49,15 @@ const Round2 = () => {
         <h2 className="text-2xl font-semibold text-[#ff4d4d] mb-4">Instructions</h2>
         <ul className="list-decimal list-inside space-y-3 text-lg">
           <li>Complete the given technical task carefully.</li>
-          <li>Upload your solution or view resources using the link below.</li>
+          <li>Enter the final sentence</li>
         </ul>
         <div className="mt-4">
           <a
-            href="https://drive.google.com/" // replace with your actual Google Drive link
+            href="https://drive.google.com/drive/u/3/folders/1skFAKDBPzY2QjCCXMsjAaq8Yd5xk9JIA" 
             target="_blank"
             rel="noopener noreferrer"
             style={{ textDecoration: "none" }}
-            className="text-[#ff0000] underline hover:text-[#ff4d4d] text-decoration-none no-underline"
+            className="text-[#ff0000]  hover:text-[#ff4d4d] text-decoration-none no-underline"
           >
             🔗 Open Google Drive Task
           </a>

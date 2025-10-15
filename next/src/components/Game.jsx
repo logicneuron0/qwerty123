@@ -3,14 +3,15 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { roomsData, clueMap, itemsData } from '@/lib/GameData';
 import styles from './Game.module.css';  // Import CSS Module for game styles
-import { Link } from 'lucide-react';
+import { useRouter } from 'next/navigation'; // Import for App Router
 
-const Game = () => {
+const Game = ({userData}) => {
   // Refs for THREE.js objects
+  const router = useRouter(); // Initialize router for navigation
   const containerRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
-  const rendererRef = useRef(null);
+  const rendererRef = useRef(null)
   const raycasterRef = useRef(null);
   const animationIdRef = useRef(null);
   const jumpscareVideoRef = useRef(null);
@@ -45,6 +46,9 @@ const Game = () => {
   const [showDoorTransition, setShowDoorTransition] = useState(false);
   const [roomProgress, setRoomProgress] = useState([]);
   const [scoreFlash, setScoreFlash] = useState({ text: '', className: '' });
+  const [isSyncingScore, setIsSyncingScore] = useState(false);
+  const [syncError, setSyncError] = useState(null);
+  const lastSyncedScoreRef = useRef(0);
 
   // Initialize audio
   useEffect(() => {
@@ -111,6 +115,46 @@ const Game = () => {
       renderer.dispose();
     };
   }, [showLanding]);
+
+  const syncScoreToBackend = async (scoreToAdd, shouldEndGame = false) => {
+    if (isSyncingScore) return; // Prevent duplicate syncs
+    
+    setIsSyncingScore(true);
+    setSyncError(null);
+
+    try {
+      const response = await fetch('/api/game/updateScore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scoreToAdd: scoreToAdd,
+          nextStage: shouldEndGame ? userData.stage + 1 : null
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to sync score');
+      }
+
+      const data = await response.json();
+      console.log('✓ Score synced to backend:', data.newScore);
+      lastSyncedScoreRef.current = data.newScore;
+      
+      return data;
+    } catch (error) {
+      console.error('❌ Score sync failed:', error);
+      setSyncError('Failed to save score. Your progress is saved locally.');
+      
+      // Retry after 3 seconds
+      setTimeout(() => {
+        syncScoreToBackend(scoreToAdd, shouldEndGame);
+      }, 3000);
+      
+      throw error;
+    } finally {
+      setIsSyncingScore(false);
+    }
+  };
 
   // Load all items into scene
   const loadAllItems = (scene) => {
@@ -559,7 +603,7 @@ const Game = () => {
     if (hitObj.name === expected) {
       console.log('✓ Correct object found!');
       animateCorrectObject(hitObj);
-      updateScore(5);
+      updateScore(10);
       setTimeout(() => nextClue(), 2200);
     } else if (isFake) {
       updateScore(-2);
@@ -617,8 +661,18 @@ const Game = () => {
     setScore(prev => {
       const newScore = prev + delta;
       gameStateRef.current.currentScore = newScore;
+
+      // Sync to backend every 25 points (5 correct answers)
+      const currentDelta = newScore - lastSyncedScoreRef.current;
+      if (Math.abs(currentDelta) >= 25) {
+        syncScoreToBackend(currentDelta).catch(err => {
+          console.warn('Score sync failed, will retry:', err);
+        });
+      }
+
       return newScore;
     });
+
     setRoomScores(prev => {
       const updated = [...prev];
       updated[gameStateRef.current.currentRoomIndex] += delta;
@@ -748,13 +802,27 @@ const Game = () => {
   };
 
   // End game
-  const endGame = () => {
+  const endGame = async() => {
     console.log('Ending game with score:', gameStateRef.current.currentScore);
     console.log('Room scores:', gameStateRef.current.currentRoomScores);
-    setFinalScore(gameStateRef.current.currentScore);
+    
+    const finalScore=(gameStateRef.current.currentScore);
+    const scoreDelta = finalScore- lastSyncedScoreRef.current;
+
+    setFinalScore(finalScore);
     setRoomScores(gameStateRef.current.currentRoomScores);
-    setGameOver(true);
+
     if (gameStateRef.current.roomTimer) clearInterval(gameStateRef.current.roomTimer);
+
+    // Sync final score to backend
+    try {
+      await syncScoreToBackend(scoreDelta, true); // true = move to next stage
+      console.log('✓ Final score synced successfully');
+    } catch (error) {
+      console.error('❌ Failed to sync final score');
+    }
+    
+    setGameOver(true);
   };
 
   // Jumpscare
@@ -846,16 +914,47 @@ const Game = () => {
     gameStateRef.current.jumpscareTriggered = false;
     loadRoom(0);
   };
+  const handleProceed = useCallback(() => {
+        // Use router.push for Next.js navigation
+        router.push('/game/riddlegame');
+    }, [router]);
+
+  const SyncStatusIndicator = () => {
+    if (syncError) {
+      return (
+        <div className={styles.syncStatus} style={{ color: '#ff4444' }}>
+          ⚠️ {syncError}
+        </div>
+      );
+    }
+    
+    if (isSyncingScore) {
+      return (
+        <div className={styles.syncStatus} style={{ color: '#4CAF50' }}>
+          💾 Saving...
+        </div>
+      );
+    }
+    
+    return null;
+  };
 
   return (
     <>
       {showLanding ? (
-        <LandingPage onStart={() => setShowLanding(false)} roomsUnlocked={gameStateRef.current.roomsUnlocked} />
+        <LandingPage onStart={() => setShowLanding(false)} roomsUnlocked={gameStateRef.current.roomsUnlocked} userData={userData}/>
       ) : (
         <div className={styles.gameContainer}>
           <div ref={containerRef} id="container" />
           <div className={styles.uiRoot}>
+
+            <div className={styles.userInfo}>
+              <span className={styles.username}>👤 {userData?.username}</span>
+              <SyncStatusIndicator />
+            </div>
+
             <div id="clueBar" className={`${styles.clueBar} fade-in`}>{currentClue}</div>
+
             <div className={styles.scorePanel}>
               <span id="scoreLabel">Score: </span>
               <span id="scoreValue" className={styles.scoreValue}>{score}</span>
@@ -876,10 +975,21 @@ const Game = () => {
                 <div className={styles.endContent}>
                   <h1>You've Conquered the Shadows of Bhangarh!</h1>
                   <p style={{ fontSize: '18px', margin: '15px 0', color: '#ffd700' }}>🏆 Victory Achieved! 🏆</p>
-                  <p>You've explored all the haunted chambers and found every cursed artifact.</p>
+                  <p>Great job, {userData?.username}! You've completed all rooms.</p>
                   <p className={styles.gameOverTotalScore}>
                     Total Score: <span className={styles.gameOverTotalScoreValue}>{finalScore}</span>
                   </p>
+
+                  {/* Score saved confirmation */}
+                  <p style={{ 
+                    color: '#4CAF50', 
+                    fontSize: '14px', 
+                    marginTop: '10px',
+                    opacity: isSyncingScore ? 0.7 : 1 
+                  }}>
+                    {isSyncingScore ? '💾 Saving your score...' : '✓ Score saved to your account!'}
+                  </p>
+
                   <div className={styles.gameOverScoreBreakdown}>
                     <h3 className={styles.gameOverRoomTitle}>Room Scores:</h3>
                     {roomsData.map((room, i) => (
@@ -892,7 +1002,7 @@ const Game = () => {
                     ))}
                   </div>
                   <div className={styles.endButtons}>
-                    <Link href='/game/escape_room'><button>Proceed to Next Round</button></Link>
+                   <button onClick={handleProceed} className={styles.endbtn}>Proceed to Next Round</button>
                   </div>
                 </div>
               </div>
