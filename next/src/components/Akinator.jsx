@@ -4,17 +4,25 @@ import styles from './Akinator.module.css';
 import { useState, useRef, useEffect } from 'react';
 import { Skull, RefreshCw, ChevronRight } from 'lucide-react'; 
 
-export default function Akinator({onRoundWin}) {
+export default function Akinator({onRoundWin, userId}) {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+
+// console.log('userId:', userId);
+// console.log('API_BASE_URL:', API_BASE_URL);
 
 const [messages, setMessages] = useState([]);
 const [input, setInput] = useState('');
 const [isLoading, setIsLoading] = useState(false);
 const [pastAnswers, setPastAnswers] = useState([]);
-const [gameOver, setGameOver] = useState(false); // True when current round is won (BINGO!)
-const [isGameCompleted, setIsGameCompleted] = useState(false); // True when ALL rounds are finished
+const [gameOver, setGameOver] = useState(false);
+const [isGameCompleted, setIsGameCompleted] = useState(false);
 const [roundStatus, setRoundStatus] = useState({ currentRound: 0, totalRounds: 0 });
 const [crystalActive, setCrystalActive] = useState(false);
+
+// Guard: userId is required
+if (!userId) {
+  return <div className="text-red-500 text-center">Error: User ID not found. Please log in again.</div>;
+}
 
 const messagesEndRef = useRef(null);
 const inputRef = useRef(null);
@@ -28,25 +36,27 @@ useEffect(() => {
 }, [messages]);
 
 useEffect(() => {
-    
   if (!gameOver && inputRef.current) {
       inputRef.current.focus();
   }
 }, [gameOver]); 
 
-
 const fetchGameStatus = async () => {
   setIsLoading(true);
   try {
-      const response = await fetch(`${API_BASE_URL}/api/status`);
+      const response = await fetch(`${API_BASE_URL}/api/status?user_id=${userId}`, {
+          credentials: 'include'
+      });
       const data = await response.json();
 
       if (data.game_ready && data.total_rounds > 0) {
-          const currentRound = data.total_rounds - data.remaining_rounds + 1;
-          setRoundStatus({ currentRound, totalRounds: data.total_rounds });
+          setRoundStatus({ 
+              currentRound: data.current_round || 1, 
+              totalRounds: data.total_rounds 
+          });
           setMessages([{
               id: 1,
-              text: `Welcome! Starting Round ${currentRound} of ${data.total_rounds}. Ask me yes/no questions to discover the character.`,
+              text: `Welcome! Starting Round ${data.current_round || 1} of ${data.total_rounds}. Ask me yes/no questions to discover the character.`,
               sender: 'bot'
           }]);
           setGameOver(false);
@@ -74,7 +84,9 @@ const startNextRound = async () => {
   setIsLoading(true);
 
   try {
-      const response = await fetch(`${API_BASE_URL}/api/next_character`);
+      const response = await fetch(`${API_BASE_URL}/api/next_character?user_id=${userId}`, {
+          credentials: 'include'
+      });
       const data = await response.json();
 
       if (data.status === "GAME_OVER_ALL_ROUNDS") {
@@ -89,8 +101,11 @@ const startNextRound = async () => {
           }]);
           
       } else if (data.status === "NEXT_ROUND_STARTED") {
-          const nextRoundNumber = roundStatus.currentRound + 1;
-          setRoundStatus(prev => ({ ...prev, currentRound: nextRoundNumber }));
+          const nextRoundNumber = data.current_round || (roundStatus.currentRound + 1);
+          setRoundStatus({ 
+              currentRound: nextRoundNumber,
+              totalRounds: data.total_rounds 
+          });
           setGameOver(false);
           setPastAnswers([]);
           
@@ -124,7 +139,6 @@ const handleSubmit = async (e) => {
   setIsLoading(true);
   setCrystalActive(true);
   
-  
   if (hasForbiddenPattern && (questionLower.includes('what') || questionLower.includes('who'))) {
     setTimeout(() => {
       const warningMsg = {
@@ -144,7 +158,9 @@ const handleSubmit = async (e) => {
     const response = await fetch(`${API_BASE_URL}/api/ask`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ 
+        user_id: userId,
         question: currentQuestion, 
         pastAnswers: pastAnswers.filter(a => a.answer !== 'BINGO!').map(a => ({ question: a.question, answer: a.answer }))
       })
@@ -177,7 +193,6 @@ const handleSubmit = async (e) => {
       }, 1000);
     }
     
-    // Check if game is over
     if (data.gameOver) {
       setGameOver(true);
       const congratsMessage = { 
@@ -192,7 +207,6 @@ const handleSubmit = async (e) => {
       if(typeof onRoundWin==="function"){
         onRoundWin(roundStatus.currentRound)
       }
-     
     }
     
   } catch (error) {
@@ -209,12 +223,11 @@ const handleSubmit = async (e) => {
   }
 };
   
-  
 return (
   <div className={styles.hauntedBg} style={{ fontFamily: "'Simbiot', monospace" }}>
     <div className="container mx-auto px-4 py-8 relative z-10">
       <header className="text-center mb-8">
-              <h1 className="font-bold text-6xl md:text-7xl mb-10 text-center bg-gradient-to-b from-[#C10000] to-[#8A0303] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(193,0,0,0.6)]" style={{ fontFamily: "'Death Markers Drip', cursive", letterSpacing: '6px' }}>Reverse Akinator</h1>
+        <h1 className="font-bold text-6xl md:text-7xl mb-10 text-center bg-gradient-to-b from-[#C10000] to-[#8A0303] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(193,0,0,0.6)]" style={{ fontFamily: "'Death Markers Drip', cursive", letterSpacing: '6px' }}>Reverse Akinator</h1>
         {roundStatus.totalRounds > 0 && !isGameCompleted && (
           <p className="text-xl font-bold font-crimson">
               {`Round ${roundStatus.currentRound} of ${roundStatus.totalRounds}`}
@@ -228,8 +241,7 @@ return (
       </header> 
       
       <main className="max-w-2xl mx-auto">
-          {/* <div className="bg-gray-700/30 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden border border-gray-500/50 flex flex-col h-[80vh] min-h-[500px]"> */}
-          <div className="bg-gray-700/30  backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden border-gray-700 haunted-shadow flex flex-col h-[80vh] min-h-[500px]">
+          <div className="bg-gray-700/30 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden border-gray-700 haunted-shadow flex flex-col h-[80vh] min-h-[500px]">
           <div id="crystal-ball" className={`relative w-32 h-32 mx-auto mt-6 mb-4 ${crystalActive ? 'crystal-active' : ''}`}>
                     <div className="absolute inset-0 rounded-full bg-opacity-30 shadow-2xl crystal-glow">
                        <img src="/images/rune1.png" alt="Mystical Rune" className="swirling-icon" />

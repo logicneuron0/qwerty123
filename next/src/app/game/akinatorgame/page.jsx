@@ -1,16 +1,14 @@
-"use client";
-
+"use client"
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Akinator from "@/components/Akinator";
 
 export default function AkinatorGamePage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [gameCompleted, setGameCompleted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(20 * 60); // 20 mins
+  const [timeLeft, setTimeLeft] = useState(20 * 60);
 
-  //  Fetch logged-in user info
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -28,10 +26,8 @@ export default function AkinatorGamePage() {
     fetchUser();
   }, [router]);
 
-
   useEffect(() => {
     if (timeLeft <= 0) {
-      // Time’s up → redirect automatically
       alert("⏰ Time's up! Moving to the next game...");
       router.push("/game/game2");
       return;
@@ -44,7 +40,6 @@ export default function AkinatorGamePage() {
     return () => clearInterval(timer);
   }, [timeLeft, router]);
 
-  // Format time as MM:SS
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60)
       .toString()
@@ -53,8 +48,6 @@ export default function AkinatorGamePage() {
     return `${m}:${s}`;
   };
 
-
-  // Update user score & stage when round is completed
   const handleRoundWin = async (roundNumber) => {
     try {
       await fetch("/api/game/updateScore", {
@@ -75,12 +68,11 @@ export default function AkinatorGamePage() {
       console.error("Error updating user score:", err);
     }
 
-    //  If this was the 4th (final) round, end game
     if (roundNumber >= 4) {
       setGameCompleted(true);
       setTimeout(() => {
         router.push("/game/game2");
-      }, 2500); // redirect after a short pause
+      }, 2500);
     }
   };
 
@@ -95,15 +87,15 @@ export default function AkinatorGamePage() {
   return (
     <div className="min-h-screen bg-black text-gray-200 flex flex-col items-center justify-center">
       <div className="absolute z-10 top-6 right-6 text-lg font-mono bg-gray-800 px-4 py-2 rounded-lg shadow-md">
-        ⏱ Time Left: <span className="text-green-400 font-semibold">{formatTime(timeLeft)}</span>
+        Time Left: <span className="text-green-400 font-semibold">{formatTime(timeLeft)}</span>
       </div>
       
       {!gameCompleted ? (
-        <Akinator onRoundWin={handleRoundWin} />
+        <Akinator onRoundWin={handleRoundWin} userId={user.id} />
       ) : (
         <div className="text-center space-y-4" style={{fontFamily: "'Simbiot', monospace"}}>
           <h1 className="text-4xl font-bold text-green-400">
-            🎉 You completed all 4 rounds!
+            You completed all 4 rounds!
           </h1>
           <p className="text-xl text-gray-400">
             Moving to the next challenge...

@@ -6,88 +6,86 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv() 
-
 
 API_KEY = os.getenv("GEMINI_API_KEY") 
 MONGO_URI = os.getenv("MONGODB_URL")
 DB_NAME = "test"
 COLLECTION_NAME = "characters"
 MODEL_NAME = "gemini-2.5-flash-preview-05-20"
-
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
+ALL_CHARACTERS = []
 
+# Store game state per user (user_id -> game_state)
+USER_GAME_STATES = {}
 
-all_characters = [] # Stores all characters fetched from the DB
-remaining_character_list = [] # List of characters yet to be guessed (shuffled)
-CURRENT_CHARACTER_DATA = {} # The character for the current round
-total_rounds = 0
-
-def initialize_game_state():
-    """Connects to MongoDB, loads all characters, shuffles them, and sets up Round 1."""
-    global all_characters
-    global remaining_character_list
-    global CURRENT_CHARACTER_DATA
-    global total_rounds
-    
+def load_all_characters():
+    """Load all characters from MongoDB once at startup."""
+    global ALL_CHARACTERS
     try:
         client = MongoClient(MONGO_URI)
         db = client[DB_NAME]
         character_collection = db[COLLECTION_NAME]
-
-        all_characters = list(character_collection.find({}, {'_id': 0})) 
-
-        if not all_characters:
+        ALL_CHARACTERS = list(character_collection.find({}, {'_id': 0}))
+        client.close()
+        
+        if not ALL_CHARACTERS:
             print("--- DATABASE WARNING ---")
             print("Database is empty. Please run the data population script first!")
-            client.close()
-            return
-
-        total_rounds = len(all_characters)
-        
-        
-        # Shuffle the list and copy it to the remaining list
-        random.shuffle(all_characters)
-        remaining_character_list = list(all_characters)
-        
-        start_next_round()
-        
-        client.close()
-        print(f"Game Initialized. Total Characters: {total_rounds}")
-
+        else:
+            print(f"Loaded {len(ALL_CHARACTERS)} characters from database")
     except Exception as e:
-        print(f"Fatal Error connecting to DB or initializing game: {e}")
-        CURRENT_CHARACTER_DATA = {} 
+        print(f"Fatal Error connecting to DB: {e}")
+
+load_all_characters()
 
 
-def start_next_round():
-    """Selects the next character from the remaining list and updates the global state."""
-    global remaining_character_list
-    global CURRENT_CHARACTER_DATA
-    
-    if not remaining_character_list:
-        # No more characters left
-        CURRENT_CHARACTER_DATA = {}
+def initialize_user_game(user_id):
+    """Initialize game state for a specific user."""
+    if not ALL_CHARACTERS:
         return False
-
-    # Pop the next character (first in the shuffled list)
-    next_char = remaining_character_list.pop(0) 
-    CURRENT_CHARACTER_DATA = next_char
     
-    print(f"Round started. Character to guess is: {CURRENT_CHARACTER_DATA['CHARACTER']}")
+    # Create a shuffled copy for this user
+    shuffled_characters = list(ALL_CHARACTERS)
+    random.shuffle(shuffled_characters)
+    
+    USER_GAME_STATES[user_id] = {
+        'remaining_characters': shuffled_characters,
+        'total_rounds': len(shuffled_characters),
+        'current_round': 0,
+        'current_character': None,
+    }
+    
+    return start_next_round_for_user(user_id)
+
+
+def start_next_round_for_user(user_id):
+    """Start the next round for a specific user."""
+    if user_id not in USER_GAME_STATES:
+        initialize_user_game(user_id)
+    
+    game_state = USER_GAME_STATES[user_id]
+    remaining = game_state.get('remaining_characters', [])
+    
+    if not remaining:
+        game_state['current_character'] = None
+        return False
+    
+    # Pop the next character
+    next_char = remaining.pop(0)
+    game_state['remaining_characters'] = remaining
+    game_state['current_character'] = next_char
+    game_state['current_round'] = game_state.get('current_round', 0) + 1
+    
+    print(f"User {user_id}: Round {game_state['current_round']}, Character: {next_char.get('CHARACTER')}")
     return True
-
-initialize_game_state()
-
 
 
 def call_gemini_api(system_prompt, user_query, character_context):
-    """
-    Calls the Gemini API with structured instructions and character data.
-    (Error handling and structure retained from original file)
-    """
+    """Calls the Gemini API with structured instructions and character data."""
     if not API_KEY:
         print("⚠️ WARNING: GEMINI_API_KEY not found!")
         return "ERROR: API key not configured." 
@@ -110,9 +108,7 @@ def call_gemini_api(system_prompt, user_query, character_context):
         response.raise_for_status()
         
         result = response.json()
-        
         text = result.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', 'NOT FOUND')
-        
         return text.strip()
 
     except requests.exceptions.RequestException as e:
@@ -123,26 +119,22 @@ def call_gemini_api(system_prompt, user_query, character_context):
         return "ERROR: Invalid response from Gemini API."
 
 
-# --- CORS Configuration for Deployment ---
 CORS_ORIGINS = ["http://localhost:3000"] 
 
 if FRONTEND_URL:
-    # Allows multiple URLs if comma-separated (e.g., https://prod.com,https://staging.com)
     origins_to_add = [url.strip().rstrip('/') for url in FRONTEND_URL.split(',') if url.strip()]
     CORS_ORIGINS.extend(origins_to_add)
     
 CORS_ORIGINS.append("https://clockout3.vercel.app") 
 
 app = Flask(__name__)
-# The change is here: configuring CORS with the allowed origins list
-CORS(app, origins=CORS_ORIGINS) 
+CORS(app, origins=CORS_ORIGINS, supports_credentials=True)
 
 
 def check_answer_with_gemini(question: str, dataset: dict) -> str:
     if not dataset:
         return "ERROR: Game not initialized. Check database connection."
 
-    #layer1 sec
     forbidden_patterns = [
         'character', 'name', 'who is', 'who are', "who's", 
         'what is the character', 'tell me who', 'reveal',
@@ -152,12 +144,10 @@ def check_answer_with_gemini(question: str, dataset: dict) -> str:
     
     question_lower = question.lower().strip()
     
-    # Block any question asking about character identity
     for pattern in forbidden_patterns:
         if pattern in question_lower:
             return "NOT FOUND"
           
-    #layer2 sec
     system_instruction = (
         "You are a strict trivia game master. Your task is to analyze the user's question "
         "and determine the correct response based ONLY on the provided JSON data about the character. "
@@ -180,7 +170,6 @@ def check_answer_with_gemini(question: str, dataset: dict) -> str:
         "Q: 'What is the character name?' → 'NOT FOUND'"
     )
     
-    #layer3 sec
     safe_dataset = {
         k: v for k, v in dataset.items() 
         if k not in ['CHARACTER', 'SOURCE', '_id']
@@ -198,22 +187,18 @@ def check_answer_with_gemini(question: str, dataset: dict) -> str:
         
     return gemini_response.upper() 
 
-# Function to generate hints (using the dynamically loaded character data)
+
 def generate_hint(past_answers, current_dataset):
     if len(past_answers) < 2:
         return "Ask more questions to get hints!"
 
     past_answer_strings = [str(item.get('answer', '')) for item in past_answers]
-
-    # Check if the last two answers were FALSE or NOT FOUND
     last_two_negative = all("FALSE" in ans or "NOT FOUND" in ans for ans in past_answer_strings[-2:])
 
     if last_two_negative:
-        # Get a random attribute key for a subtle hint
         keys = [k for k in current_dataset.keys() if k not in ['CHARACTER', 'SOURCE', 'PORTRAYED_BY', '_id']]
         if keys:
             random_key = random.choice(keys)
-            # Make the hint subtle, converting snake_case to readable text
             hint_text = random_key.lower().replace('_', ' ')
             return f"Hint: Maybe focus on the character's **{hint_text}**..."
         else:
@@ -221,57 +206,87 @@ def generate_hint(past_answers, current_dataset):
     else:
         return "You're going in the right direction! Keep the good questions coming."
 
+
 @app.route('/api/ask', methods=['POST'])
 def ask_question():
     """Handles user questions for the current character."""
     data = request.json
+    user_id = data.get('user_id')  # NEW: Get user ID from request
     question = data.get('question', '')
     past_answers = data.get('pastAnswers', [])
 
-    if not CURRENT_CHARACTER_DATA:
-         return jsonify({
+    # Validate user_id
+    if not user_id:
+        return jsonify({
+            'answer': "ERROR: User ID is required.",
+            'hint': "Invalid request.",
+            'gameOver': True
+        }), 400
+
+    # Get user's game state
+    if user_id not in USER_GAME_STATES:
+        initialize_user_game(user_id)
+    
+    game_state = USER_GAME_STATES[user_id]
+    current_character = game_state.get('current_character')
+    
+    if not current_character:
+        return jsonify({
             'answer': "ERROR: No character loaded for this round. Try /api/next_character.",
             'hint': "Game Error.",
             'gameOver': True
-        })
+        }), 400
+    
     if not question.strip():
         return jsonify({
             'answer': "ERROR: Please ask a question.",
             'hint': "Try again!",
             'gameOver': False
         })
-        
-    # complex question to Gemini
-    answer = check_answer_with_gemini(question, CURRENT_CHARACTER_DATA)
 
-    hint = generate_hint(past_answers, CURRENT_CHARACTER_DATA)
+    answer = check_answer_with_gemini(question, current_character)
+    hint = generate_hint(past_answers, current_character)
 
     response = {
         'answer': answer,
         'hint': hint,
         'gameOver': "BINGO!" in answer
     }
+    return jsonify(response)
 
-    return jsonify(response) 
 
 @app.route('/api/next_character', methods=['GET'])
 def get_next_character_round():
-    """Starts the next round after a BINGO! and returns the game status."""
+    """Starts the next round after a BINGO!"""
+    user_id = request.args.get('user_id')  # NEW: Get user ID from query params
     
-    if not remaining_character_list:
+    if not user_id:
+        return jsonify({
+            "status": "ERROR",
+            "message": "User ID is required."
+        }), 400
+
+    if user_id not in USER_GAME_STATES:
+        initialize_user_game(user_id)
+    
+    game_state = USER_GAME_STATES[user_id]
+    remaining = game_state.get('remaining_characters', [])
+    
+    if not remaining:
         return jsonify({
             "status": "GAME_OVER_ALL_ROUNDS",
-            "message": f"Congratulations! You guessed all {total_rounds} characters."
+            "message": f"Congratulations! You guessed all characters."
         }), 200
 
-    # Start the next round
-    if start_next_round():
-        # Success
+    if start_next_round_for_user(user_id):
+        total = game_state.get('total_rounds', 0)
+        current_round = game_state.get('current_round', 0)
+        
         return jsonify({
             "status": "NEXT_ROUND_STARTED",
-            # "character_name": CURRENT_CHARACTER_DATA.get('CHARACTER', 'Unknown'),
-            "remaining_rounds": len(remaining_character_list) + 1, # +1 because CURRENT_CHARACTER_DATA is the current round
-            "total_rounds": total_rounds,
+            "remaining_rounds": len(remaining) + 1,
+            "total_rounds": total,
+            "current_round": current_round,
             "message": "New round started! Start asking questions."
         }), 200
     else:
@@ -284,11 +299,27 @@ def get_next_character_round():
 @app.route('/api/status', methods=['GET'])
 def get_game_status():
     """Provides initial game status for the Next.js frontend on load."""
+    user_id = request.args.get('user_id')  # NEW: Get user ID from query params
+    
+    if not user_id:
+        return jsonify({
+            "error": "User ID is required."
+        }), 400
+
+    if user_id not in USER_GAME_STATES:
+        initialize_user_game(user_id)
+    
+    game_state = USER_GAME_STATES[user_id]
+    total_rounds = game_state.get('total_rounds', 0)
+    remaining = game_state.get('remaining_characters', [])
+    current_char = game_state.get('current_character')
+    current_round = game_state.get('current_round', 0)
+    
     return jsonify({
-        # "current_character": CURRENT_CHARACTER_DATA.get('CHARACTER', 'N/A') if CURRENT_CHARACTER_DATA else 'N/A',
         "total_rounds": total_rounds,
-        "remaining_rounds": len(remaining_character_list) + (1 if CURRENT_CHARACTER_DATA else 0),
-        "game_ready": True if CURRENT_CHARACTER_DATA else False
+        "remaining_rounds": len(remaining) + (1 if current_char else 0),
+        "current_round": current_round,
+        "game_ready": True if current_char else False
     })
 
 
