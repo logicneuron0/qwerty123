@@ -1,4 +1,3 @@
-"use client"
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { roomsData, clueMap, itemsData } from '@/lib/GameData';
@@ -892,7 +891,7 @@ const Game = () => {
                     ))}
                   </div>
                   <div className={styles.endButtons}>
-                    <Link href='/game/riddlegame'><button>Proceed to Next Round</button></Link>
+                    <Link href='/game/escape_room'><button>Proceed to Next Round</button></Link>
                   </div>
                 </div>
               </div>
