@@ -28,18 +28,10 @@ useEffect(() => {
 }, [messages]);
 
 useEffect(() => {
-  
-  // const fogOverlay = document.createElement('div');
-  // fogOverlay.className = 'fog-overlay';
-  // document.body.appendChild(fogOverlay);
-  
+    
   if (!gameOver && inputRef.current) {
       inputRef.current.focus();
   }
-
-  // return () => {
-  //   document.body.removeChild(fogOverlay);
-  // };
 }, [gameOver]); 
 
 
@@ -133,7 +125,6 @@ const handleSubmit = async (e) => {
   setCrystalActive(true);
   
   
-// If user is asking for character name, warn them
   if (hasForbiddenPattern && (questionLower.includes('what') || questionLower.includes('who'))) {
     setTimeout(() => {
       const warningMsg = {
@@ -244,9 +235,6 @@ return (
                        <img src="/images/rune1.png" alt="Mystical Rune" className="swirling-icon" />
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center">
-                        {/* <svg className="w-24 h-24 text-red-500" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                             <path d="M12 2C6.48 2 2 6.48 2 12V16C2 18.21 3.79 20 6 20H8V22H16V20H18C20.21 20 22 18.21 22 16V12C22 6.48 17.52 2 12 2ZM20 16C20 17.1 19.1 18 18 18H6C4.9 18 4 17.1 4 16V12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12V16ZM10 10H8V8H10V10ZM16 10H14V8H16V10ZM12 17C10.68 17 9.5 16.4 8.5 15.25L9.5 14.25C10.25 15.1 11.25 15.75 12 15.75C12.75 15.75 13.75 15.1 14.5 14.25L15.5 15.25C14.5 16.4 13.32 17 12 17Z"/>
-                        </svg> */}
                      </div>
                  </div>
               

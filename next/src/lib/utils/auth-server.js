@@ -19,7 +19,6 @@ export function verifyToken(token) {
 
 //set cookies
 export function setTokenCookie(res, token) {
-  // `res` is a NextResponse object, not Express-style
   res.cookies.set({
     name: 'token',
     value: token,

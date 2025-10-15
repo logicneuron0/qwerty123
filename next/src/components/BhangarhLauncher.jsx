@@ -3,43 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function BhangarhLauncher() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Fetch user data from your existing auth/me endpoint
-    async function fetchUser() {
-      try {
-        const res = await fetch('/api/auth/me');
-        const data = await res.json();
-        
-        if (data.loggedIn && data.user) {
-          setUser(data.user);
-        }
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchUser();
-  }, []);
-
-  const launchBhangarh = () => {
-    if (!user) {
-      alert('Please log in to play and save your progress!');
-      return;
-    }
-
-    // Encode user data to pass safely
-    const userData = btoa(JSON.stringify({
-      userId: user.id,
-      username: user.username
-    }));
-
-    // 🔴 REPLACE WITH YOUR ACTUAL BHANGARH GAME URL
-    window.location.href = `https://hiddenobjgame.vercel.app/?data=${userData}`;
-  };
+  const [loading, setLoading]= useState(false)
 
   if (loading) {
     return (
@@ -60,7 +24,7 @@ export default function BhangarhLauncher() {
         Explore the haunted fortress of Bhangarh. Find cursed artifacts in each room before time runs out!
       </p>
 
-      {user && (
+      {/* {user && (
         <div style={{ 
           background: 'rgba(255, 255, 255, 0.5)', 
           padding: '20px', 
@@ -72,10 +36,9 @@ export default function BhangarhLauncher() {
             <strong>Player:</strong> {user.username}
           </p>
         </div>
-      )}
+      )} */}
 
-      <button
-        onClick={launchBhangarh}
+      <Link href="/game/escape_room"><button
         className="bg-[#880000] mb-10 border-2 border-[#ff0000] text-white px-6 py-5 rounded-lg text-xl font-semibold tracking-widest transition-all duration-300 hover:bg-[#ff0000] hover:scale-105 shadow-[0_8px_20px_rgba(255,0,0,0.5)]"
     
         onMouseOver={(e) => {
@@ -88,7 +51,7 @@ export default function BhangarhLauncher() {
         }}
       >
         Enter Bhangarh Fort
-      </button>
+      </button></Link>
 
       <div className="bg-black/70 border-2 border-[#5a0000] rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur-sm p-6 w-full max-w-2xl mb-8">
         <h3 className="text-xl font-semibold text-[#ff4d4d] mb-4">Game Instructions:</h3>
@@ -101,9 +64,9 @@ export default function BhangarhLauncher() {
           <li>❌ -2 for selecting wrong objects</li>
         </ul>
       </div>
-      <div className='mt-10'>
+      {/* <div className='mt-10'>
         <Link href='/game/riddlegame'><button className="bg-[#880000] mb-10 border-2 border-[#ff0000] text-white px-6 py-5 rounded-lg text-xl font-semibold tracking-widest transition-all duration-300 hover:bg-[#ff0000] hover:scale-105 shadow-[0_8px_20px_rgba(255,0,0,0.5)]">Go to next task</button></Link>
-      </div>
+      </div> */}
     </div>
   );
 }

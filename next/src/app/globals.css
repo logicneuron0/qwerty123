@@ -36,4 +36,7 @@
   animation: fadeInTech 0.3s ease-out forwards;
 }
 
+body{
+  background-color: #000;
+}
 
