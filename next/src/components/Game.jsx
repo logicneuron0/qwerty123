@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { roomsData, clueMap, itemsData } from '@/lib/GameData';
 import styles from './Game.module.css';  // Import CSS Module for game styles
+import { Link } from 'lucide-react';
 
 const Game = () => {
   // Refs for THREE.js objects
@@ -891,7 +892,7 @@ const Game = () => {
                     ))}
                   </div>
                   <div className={styles.endButtons}>
-                    <button onClick={() => { window.location.href = '#'; }}>Proceed to Next Round</button>
+                    <Link href='/game/riddlegame'><button>Proceed to Next Round</button></Link>
                   </div>
                 </div>
               </div>
