@@ -18,7 +18,7 @@ export default function Game2Page() {
       const res = await fetch("/api/auth/me", {
         credentials: "include"
       });
-      const data = await res.json();
+      const data =  await res.json();
       console.log("Fetched data:", data);
 
       if (!data.user || !data.user.faction) {
