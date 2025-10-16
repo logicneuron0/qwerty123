@@ -147,7 +147,7 @@ text-shadow: 0 0 15px rgba(193, 0, 0, 0.6), 0 0 30px rgba(138, 3, 3, 0.3);
 }
 
 /* Hover effect for all buttons */
-button:hover {
+.button:hover{
   z-index: 1;
   transform: scale(1.18);
   box-shadow: 0 0 20px rgba(255,255,255,0.3), 0 4px 16px rgba(0,0,0,0.18);
